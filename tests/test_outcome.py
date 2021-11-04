@@ -19,4 +19,5 @@ class TestOutcome(TestCase):
         assert o2 != o3
         assert o1.winAmount(5) == 5
         assert o3.winAmount(5) == 10
+        assert o3.winAmount(6) == 12
 
