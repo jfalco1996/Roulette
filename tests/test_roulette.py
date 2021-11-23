@@ -35,6 +35,13 @@ class TestWheel(TestCase):
         self.assertIn(Outcome("0", 35), wheel.get(0).outcomes)
         self.assertIn(Outcome("1-2-4-5", 8), wheel.get(5).outcomes)
 
+    def test_outcome_map(self):
+        wheel = Wheel()
+        build = BinBuilder(wheel)
+        build.buildbins()
+        self.assertEqual(Outcome("0", 35), wheel.getOutcome("0"))
+        self.assertEqual(Outcome("1-2-4-5", 8), wheel.getOutcome("1-2-4-5"))
+
 
 class TestBinBuilder(TestCase):
     def test_straight_bets(self):
@@ -146,3 +153,89 @@ class TestBinBuilder(TestCase):
         five_out = Outcome("Five Bet", 6)
         self.assertIn(five_out, wheel.bins[0].outcomes)
         self.assertIn(five_out, wheel.bins[37].outcomes)
+
+
+class TestBet(TestCase):
+    def test_bet_string(self):
+        outcome = Outcome("0", 35)
+        bet = Bet(2, outcome)
+        self.assertEqual(str(bet), "$2 on 0 (35:1)")
+
+    def test_bet_repr(self):
+        outcome = Outcome("Five Bet", 6)
+        bet = Bet(5, outcome)
+        self.assertEqual(repr(bet), "Bet(amount=5, outcome=Outcome(name='Five Bet', odds=6))")
+
+    def test_bet_winamount(self):
+        o1 = Outcome("Five Bet", 5)
+        o2 = Outcome("5", 25)
+        b1 = Bet(5, o1)
+        b2 = Bet(1, o1)
+        b3 = Bet(5, o2)
+        b4 = Bet(1, o2)
+        self.assertEqual(30, b1.winAmount())
+        self.assertEqual(6, b2.winAmount())
+        self.assertEqual(130, b3.winAmount())
+        self.assertEqual(26, b4.winAmount())
+
+
+    def test_bin_loseamount(self):
+        o1 = Outcome("Five Bet", 5)
+        o2 = Outcome("5", 25)
+        b1 = Bet(5, o1)
+        b2 = Bet(1, o1)
+        b3 = Bet(5, o2)
+        b4 = Bet(1, o2)
+        self.assertEqual(b1.loseAmount(), b3.loseAmount())
+        self.assertEqual(b2.loseAmount(), b4.loseAmount())
+        self.assertEqual(5, b1.loseAmount())
+        self.assertEqual(1, b2.loseAmount())
+        self.assertEqual(5, b3.loseAmount())
+        self.assertEqual(1, b4.loseAmount())
+
+class TestTable(TestCase):
+    def test_Table(self):
+        o1 = Outcome("Five Bet", 5)
+        o2 = Outcome("5", 25)
+        b1 = Bet(5, o1)
+        b2 = Bet(1, o1)
+        b3 = Bet(5, o2)
+        b4 = Bet(1, o2)
+        t = Table(b1,b2,b3,b4)
+        print(repr(b1))
+        print(str(b1))
+        print(repr(t))
+        print(str(t))
+        self.assertEqual('($5 on Five Bet (5:1), $1 on Five Bet (5:1), $5 on 5 (25:1), $1 on 5 (25:1))', str(t))
+        self.assertEqual("Table(Bet(amount=5, outcome=Outcome(name='Five Bet', odds=5)), "
+                         "Bet(amount=1, outcome=Outcome(name='Five Bet', odds=5)), "
+                         "Bet(amount=5, outcome=Outcome(name='5', odds=25)), "
+                         "Bet(amount=1, outcome=Outcome(name='5', odds=25)))", repr(t))
+        self.assertEqual(len(t.bets), 4)
+
+    def test_Table_min(self):
+        o1 = Outcome("Five Bet", 5)
+        o2 = Outcome("5", 25)
+        b1 = Bet(5, o1)
+        b2 = Bet(1, o1)
+        b3 = Bet(1, o2)
+        t = Table(b1,b2,b3)
+        t.minimum = 1
+        with self.assertRaises(InvalidBet):
+            t.placeBet(Bet(.5,o1))
+            t.isValid()
+
+    def test_Table_limit(self):
+        o1 = Outcome("Five Bet", 5)
+        o2 = Outcome("5", 25)
+        b1 = Bet(5, o1)
+        b2 = Bet(1, o1)
+        b3 = Bet(1, o2)
+        t = Table(b1,b2,b3)
+        t.limit = 5
+        with self.assertRaises(InvalidBet):
+            t.isValid()
+
+
+
+

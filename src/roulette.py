@@ -25,7 +25,7 @@ class Outcome:
 
     def winAmount(self, amount: float) -> float:
         """
-        :param self: Outcome object with a given name and odds
+
         :param amount: The amount that was bet on the outcome
         :return: amount bet on outcome multiplied by the odds on the bet
         """
@@ -33,7 +33,7 @@ class Outcome:
 
     def __eq__(self, other) -> bool:
         """
-        :param self: Outcome object
+
         :param other: Another outcome object to compare against
         :return: Returns true if outcome names are the same
         """
@@ -43,7 +43,6 @@ class Outcome:
     def __ne__(self, other) -> bool:
         """
 
-        :param self: Outcome object
         :param other: Another outcome object to compare against
         :return: Returns true if outcome names are not the same
         """
@@ -53,7 +52,6 @@ class Outcome:
     def __hash__(self) -> int:
         """
 
-        :param self: Outcome object
         :return: hash value of outcome object (integer)
         """
         return hash(self.name)
@@ -61,7 +59,6 @@ class Outcome:
     def __str__(self) -> str:
         """
 
-        :param self: Outcome object
         :return: name of outcome with odds
             Ex:
             "Red (1:1)"
@@ -87,14 +84,14 @@ class Bin(frozenset):
     """
     outcomes: set
 
-    def __init__(self, outcomes={}):
+    def __init__(self, outcomes={}) -> None:
         """
 
         :param outcomes:set of outcomes that will become a frozenset to make up the initial bin
         """
         self.outcomes = frozenset(outcomes)
 
-    def addOutcome(self, outcome):
+    def addOutcome(self, outcome: Outcome) -> None:
         """
 
         :param outcome: Outcome() to be added to the bin
@@ -106,23 +103,49 @@ class Bin(frozenset):
 class Wheel:
 
     bins: collections.abc.Sequence
+    all_outcomes: dict
     rng: int
 
-    def __init__(self):
+    def __init__(self) -> None:
         """
 
         """
         self.bins = tuple(Bin() for i in range(38))
+        self.all_outcomes = {}
         self.rng = random.Random()
 
     def addOutcome(self, number: int, outcome: Outcome) -> None:
+        """
+
+        :param number:
+        :param outcome:
+        :return:
+        """
+        self.all_outcomes[outcome.name] = outcome
         self.bins[number].addOutcome(outcome)
 
     def choose(self) -> Bin:
+        """
+
+        :return:
+        """
         return self.rng.choice(self.bins)
 
     def get(self, loc: int) -> Bin:
+        """
+
+        :param loc:
+        :return:
+        """
         return self.bins[loc]
+
+    def getOutcome(self, name) -> Outcome:
+        """
+
+        :param name:
+        :return:
+        """
+        return self.all_outcomes[name]
 
 
 class BinBuilder:
@@ -130,24 +153,50 @@ class BinBuilder:
     wheel: Wheel
 
     def __init__(self, w: Wheel) -> None:
+        """
+
+        :param w:
+        """
         self.wheel = w
 
-    def straightbets(self, odds):
+    def straightbets(self, odds: int) -> None:
+        """
+
+        :param odds:
+        :return:
+        """
         self.wheel.addOutcome(37, Outcome("00", odds))
         for i in range(0, 37):
             self.wheel.addOutcome(i, Outcome(str(i), odds))
 
-    def leftrighthelper(self, pos, odds):
+    def leftrighthelper(self, pos: int, odds: int) -> None:
+        """
+
+        :param pos:
+        :param odds:
+        :return:
+        """
         out = Outcome(str(pos) + '-' + str(pos + 1), odds)
         self.wheel.addOutcome(pos, out)
         self.wheel.addOutcome(pos + 1, out)
 
-    def updownhelper(self, pos, odds):
+    def updownhelper(self, pos: int, odds: int) -> None:
+        """
+
+        :param pos:
+        :param odds:
+        :return:
+        """
         out = Outcome(str(pos) + '-' + str(pos + 3), odds)
         self.wheel.addOutcome(pos, out)
         self.wheel.addOutcome(pos + 3, out)
 
-    def splitbets(self, odds):
+    def splitbets(self, odds: int) -> None:
+        """
+
+        :param odds:
+        :return:
+        """
         r = 0
         while r < 12:
             c1 = 3*r+1
@@ -163,7 +212,12 @@ class BinBuilder:
                 self.updownhelper(c3, odds)
             r += 1
 
-    def streetbets(self, odds):
+    def streetbets(self, odds: int) -> None:
+        """
+
+        :param odds:
+        :return:
+        """
         for r in range(12):
             n = 3*r + 1
             out = Outcome(str(n) + '-' + str(n + 1) + '-' + str(n+2), odds)
@@ -171,21 +225,38 @@ class BinBuilder:
             self.wheel.addOutcome(n+1, out)
             self.wheel.addOutcome(n+2, out)
 
-    def cornerhelper(self, pos, odds):
+    def cornerhelper(self, pos: int, odds: int) -> None:
+        """
+
+        :param pos:
+        :param odds:
+        :return:
+        """
         out = Outcome(str(pos) + '-' + str(pos + 1) + '-' + str(pos+3) + '-' + str(pos+4), odds)
         self.wheel.addOutcome(pos, out)
         self.wheel.addOutcome(pos + 1, out)
         self.wheel.addOutcome(pos + 3, out)
         self.wheel.addOutcome(pos + 4, out)
 
-    def cornerbets(self, odds):
+    def cornerbets(self, odds: int) -> None:
+        """
+
+        :param odds:
+        :return:
+        """
         for r in range(11):
             c1 = 3*r+1
             c2 = 3*r+2
             self.cornerhelper(c1, odds)
             self.cornerhelper(c2, odds)
 
-    def linehelper(self, pos, odds):
+    def linehelper(self, pos: int, odds: int) -> None:
+        """
+
+        :param pos:
+        :param odds:
+        :return:
+        """
         out = Outcome(str(pos) + '-' + str(pos + 1) + '-' + str(pos + 2) + '-' + str(pos+3)
                       + '-' + str(pos+4) + '-' + str(pos + 5), odds)
         self.wheel.addOutcome(pos, out)
@@ -195,24 +266,44 @@ class BinBuilder:
         self.wheel.addOutcome(pos + 4, out)
         self.wheel.addOutcome(pos + 5, out)
 
-    def linebets(self, odds):
+    def linebets(self, odds: int) -> None:
+        """
+
+        :param odds:
+        :return:
+        """
         for r in range(11):
             c1 = 3*r + 1
             self.linehelper(c1, odds)
 
-    def dozenbets(self, odds):
+    def dozenbets(self, odds: int) -> None:
+        """
+
+        :param odds:
+        :return:
+        """
         for d in range(3):
             out = Outcome('Dozen ' + str(d+1), odds)
             for m in range(12):
                 self.wheel.addOutcome(12*d+m+1, out)
 
-    def columnbets(self, odds):
+    def columnbets(self, odds: int) -> None:
+        """
+
+        :param odds:
+        :return:
+        """
         for c in range(3):
             out = Outcome('Column ' + str(c+1), odds)
             for m in range(12):
                 self.wheel.addOutcome(3*m+c+1, out)
 
-    def evenmoneybets(self, odds):
+    def evenmoneybets(self, odds: int) -> None:
+        """
+
+        :param odds:
+        :return:
+        """
         red_bins = {1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36}
         high_outcome = Outcome("High", odds)
         low_outcome = Outcome("Low", odds)
@@ -236,12 +327,21 @@ class BinBuilder:
             else:
                 self.wheel.addOutcome(n, black_outcome)
 
-    def fivebet(self, odds):
+    def fivebet(self, odds: int) -> None:
+        """
+
+        :param odds:
+        :return:
+        """
         five_outcome = Outcome("Five Bet", odds)
         for i in [0, 37, 1, 2, 3]:
             self.wheel.addOutcome(i, five_outcome)
 
     def buildbins(self) -> None:
+        """
+
+        :return:
+        """
         self.straightbets(35)
         self.splitbets(17)
         self.streetbets(11)
@@ -251,3 +351,108 @@ class BinBuilder:
         self.columnbets(2)
         self.evenmoneybets(1)
         self.fivebet(6)
+
+
+class Bet:
+    """
+
+    """
+    amountBet: int
+    outcome: Outcome
+
+    def __init__(self, amount: int, outcome: Outcome ) -> None:
+        """
+
+        :param amount:
+        :param outcome:
+        """
+        self.amountBet = amount
+        self.outcome = outcome
+
+    def winAmount(self) -> int:
+        """
+
+        :return:
+        """
+        return (self.outcome.odds + 1) * self.amountBet
+
+    def loseAmount(self) -> int:
+        """
+
+        :return:
+        """
+        return self.amountBet
+
+    def __str__(self) -> str:
+        """
+
+        :return:
+        """
+        return f"${self.amountBet:d} on {self.outcome}"
+
+    def __repr__(self) -> str:
+        """
+
+        :return:
+        """
+        return f"Bet(amount={self.amountBet:d}, outcome={self.outcome!r})"
+
+class InvalidBet(Exception):
+    def __init__(self):
+        super().__init__()
+
+
+
+class Table:
+    """
+
+    """
+    limit: int
+    minimum: int
+    bets: list
+
+    def __init__(self, *inputs) -> None:
+        self.limit = 1
+        self.minimum = 50
+        if inputs is None:
+            self.bets = []
+        else:
+            self.bets = []
+            for i in inputs:
+                self.bets.append(i)
+
+    def placeBet(self, bet: Bet) -> None:
+        self.bets.append(bet)
+
+    def isValid(self) -> None:
+        total = 0
+        for i in self.bets:
+            if i.amountBet < self.minimum:
+                raise InvalidBet
+            else:
+                total += i.amountBet
+        if total > self.limit:
+            raise InvalidBet
+
+    def __iter__(self):
+        return iter(self.bets[:])
+
+    def __str__(self) -> str:
+        out_str = "("
+        for i in iter(self):
+            out_str += str(i)
+            out_str += ", "
+        out_str = out_str[:-2] + ")"
+        return out_str
+
+    def __repr__(self) -> str:
+        out_str = "Table("
+        for i in iter(self):
+            out_str += repr(i)
+            out_str += ", "
+        out_str = out_str[:-2] + ")"
+        return out_str
+
+
+
+
