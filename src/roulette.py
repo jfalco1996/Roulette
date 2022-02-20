@@ -114,6 +114,7 @@ class Wheel:
         self.all_outcomes = {}
         self.rng = random.Random()
 
+
     def addOutcome(self, number: int, outcome: Outcome) -> None:
         """
 
@@ -452,6 +453,63 @@ class Table:
             out_str += ", "
         out_str = out_str[:-2] + ")"
         return out_str
+
+class Passenger57:
+    """
+    Player class who always bets on black
+    """
+    black: Bet
+    table: Table
+
+    def __init__(self, table: Table, wheel: Wheel) -> None:
+        self.table = table
+        self.wheel = wheel
+        self.black = self.wheel.getOutcome("Black")
+
+    def placeBets(self) -> None:
+        """
+
+        :return:
+        """
+        self.table.placeBet(Bet(5,self.black))
+
+    def win(self, bet: Bet) -> None:
+        """
+
+        :param bet:
+        :return:
+        """
+        print( str(bet) + " is a winner! You win $" + str(bet.winAmount()))
+
+    def lose(self, bet: Bet) -> None:
+        """
+
+        :param bet:
+        :return:
+        """
+        print( str(bet) + " is a loser. You lose $" + str(bet.loseAmount()))
+
+
+class Game:
+    """
+
+    """
+    wheel: Wheel
+    table: Table
+    player: Passenger57
+
+    def __init__(self, table: Table, wheel: Wheel) -> None:
+        self.wheel = wheel
+        self.table = table
+
+    def cycle(self, player: Passenger57):
+        player.placeBets()
+        wbin = self.wheel.choose()
+        for bet in iter(player.table):
+            if bet.outcome in wbin.outcomes:
+                player.win(bet)
+            else:
+                player.lose(bet)
 
 
 

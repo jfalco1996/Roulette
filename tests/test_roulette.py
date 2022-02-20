@@ -1,5 +1,6 @@
 from roulette import *
 from unittest import TestCase
+from unittest import mock
 
 
 class TestWheel(TestCase):
@@ -41,6 +42,21 @@ class TestWheel(TestCase):
         build.buildbins()
         self.assertEqual(Outcome("0", 35), wheel.getOutcome("0"))
         self.assertEqual(Outcome("1-2-4-5", 8), wheel.getOutcome("1-2-4-5"))
+
+    def test_wheel_isolation():
+        mock_rng = mock.Mock(
+            choice=mock.Mock(return_value="bin1")
+        )
+
+        bins = ["bin1", "bin2"]
+        wheel = Wheel()
+        wheel.bins = bins
+        wheel.rng = mock_rng  # Replaces random.Random
+        value = wheel.choose()
+
+        assert value == "bin1"
+        mock_rng.choice.assert_called_with(bins)
+
 
 
 class TestBinBuilder(TestCase):
@@ -236,6 +252,18 @@ class TestTable(TestCase):
         with self.assertRaises(InvalidBet):
             t.isValid()
 
+class TestGame(TestCase):
+    def test_Game(self):
+        #This is an implementation test to ensure the objects are interacting correctly
+        w = Wheel()
+        build = BinBuilder(w)
+        build.buildbins()
+        t = Table()
+        p57 = Passenger57(t,w)
+        game = Game(t,w)
+        game.cycle(p57)
+        game.cycle(p57)
+        game.cycle(p57)
 
-
-
+    def test_game_isolation():
+        #This tests the game using a mock wheel object
